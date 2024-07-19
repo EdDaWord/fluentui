@@ -30,8 +30,6 @@ A proposal for cross-platform customization
 
 - [RFC: Update theme shape](https://github.com/microsoft/fluentui/blob/master/docs/react-v9/contributing/rfcs/react-components/convergence/theme-shape.md)
 
-- [Fluent UI React Implementation Proposal](https://microsoft.sharepoint-df.com/:fl:/g/contentstorage/CSP_89c76502-b82a-4d53-bb63-7ac72555c057/Eft_33UuVNlLqA8ZZHZQZ00BfLbG6VW_mROHoushLX7egQ?e=MjQ9Wf&nav=cz0lMkZjb250ZW50c3RvcmFnZSUyRkNTUF84OWM3NjUwMi1iODJhLTRkNTMtYmI2My03YWM3MjU1NWMwNTcmZD1iJTIxQ2VGelJfWEwyVWU0YWpGWGV1Zk5KLXRBbVIwcDZ6OUF1VG83MGwxb2hKZ3hMOTRmUjhNNFQ3bFBiMVVrYnJONSZmPTAxNkRTUDdUNzNQN1BYS0xTVTNGRjJRRFlaTVIzRkFaMk4mYz0lMkYmYT1Mb29wQXBwJnA9JTQwZmx1aWR4JTJGbG9vcC1wYWdlLWNvbnRhaW5lciZ4PSU3QiUyMnclMjIlM0ElMjJUMFJUVUh4dGFXTnliM052Wm5RdWMyaGhjbVZ3YjJsdWRDMWtaaTVqYjIxOFlpRkRaVVo2VWw5WVRESlZaVFJoYWtaWVpYVm1Ua290ZEVGdFVqQndObm81UVhWVWJ6Y3diREZ2YUVwbmVFdzVOR1pTT0UwMFZEZHNVR0l4Vld0aWNrNDFmREF4TmtSVFVEZFVObFpZVFZSSVdUZEJXbFpDU0VwTVUwUlRUak0yU2tKYVVVWSUzRCUyMiUyQyUyMmklMjIlM0ElMjI0NTg0MWU5ZC1mYjcwLTRiZDQtYWJkNS02NjllNTIyNjBhYzAlMjIlN0Q=) (previous draft RFC)
-
 **🎤 Types of feedback requested:**
 
 - Implementation suggestions, especially on var() fallback strategy
@@ -157,8 +155,6 @@ The changes needed to do this will be _additive_, rather than a replacement. The
 2.  Expose Semantic and Control tokens in Theme
 
 3.  Update components to optionally consume Control tokens with fallbacks to Semantic if Control in Theme is absent. Similarly if Semantics are absent in Theme then fallback to Alias tokens (Fluent 2)
-
-Additional options for each element are compared in [Other options considered](https://microsoft.sharepoint-df.com/:w:/s/XCDesignHorizontals/EbAhJTmA9LBBjvcIaRSDxkcBX_ADbPhV347o5zlmOsq-fw?e=3JKPpH&nav=eyJoIjoiOTU1MTcxMjY3In0).
 
 ## New extended tokens
 
@@ -297,7 +293,7 @@ These would then be added to the current Theme object:
 
 ```javascript
 // Tokens/src/types.ts
-**import { ButtonTokens } from '@fluentui/react-components';**
+import { ButtonTokens } from '@fluentui/react-components';
 
 export type Theme = FontSizeTokens &
   LineHeightTokens &
@@ -425,7 +421,7 @@ The expanded token enables deeper, more portable customization, but adding many 
 
 We also propose adding formal guidance and best practices for how to handle **custom tokens** in projects. It might consist of:
 
-1.  Follow Fluent’s [naming guidelines](https://microsoft.sharepoint-df.com/:w:/s/XCDesignHorizontals/EbAhJTmA9LBBjvcIaRSDxkcBX_ADbPhV347o5zlmOsq-fw?e=EwZ1kd&nav=eyJoIjoiNDcwMDUxMDgyIn0=) for new tokens
+1.  Follow Fluent’s naming guidelines for new tokens
 
 2.  Prefix custom tokens with a product/brand prefix, e.g. OneDrive = --od-_token_
 
@@ -444,19 +440,3 @@ We also propose adding formal guidance and best practices for how to handle **cu
     b. Code comments
 
     c. Typings
-
-Appendix
-
-Related readings
-
-- [Shared Design System for Copilot.docx](https://microsoft.sharepoint-df.com/:w:/s/UX/EaGA3IMRvL5JvQgvqxFe7CUBZAeqev6rnJ85LDmedgp0iw?e=RUah20)
-
-- [Design system convergence landscape.docx](https://microsoft-my.sharepoint-df.com/:w:/p/shurd/EaNGODDsA8dIobXg_akk174BUCrAq3_rZYcZEhBzv8kv6g?e=ko37z2)
-
-- [Fluent Windows 11 design token audit.docx](https://microsoft-my.sharepoint.com/:w:/p/ianguisard/EW0fx5v0l3ROih3HS6_XXLcBFLrNhhiTMwx86sb6U_miXQ?e=nkbAhx)
-
-- [02c – Color Token Tests | Figma](https://www.figma.com/design/ilVtTHctDzraY4pR9rtmTI/02c---Color-Token-Tests?node-id=94:61759&t=KDU2ohf5a68oSClW-1)
-
-Related opportunities
-
-- **Support improved tooling**: We currently have a [Theme Designer](https://react.fluentui.dev/?path=/docs/theme-theme-designer--page) with limited capabilities and utility. There is an effort to improve this tool suite described in [ThemeDesignerBrief.docx](https://microsoft-my.sharepoint-df.com/:w:/p/matejera/Ecdyo7eXW9xIprComltn_L0BtGB9663xbufu601KCp9jRQ?e=kzg2CS) that will add broader theme customization and support for accessible token pairs. With their more precise usage, the extended tokens would enable higher confidence testing when generating accessible pairs. For example, we would be able to compare buttonBackgroundColorRest and buttonForegroundColorRest to ensure accessible contrast ratio.
