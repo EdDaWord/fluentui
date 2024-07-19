@@ -6,7 +6,7 @@ A proposal for cross-platform customization
 
 **🎯 Document objectives**: Inform, discuss, decide, align, execute
 
-**✏️ Document status**: ️Editing
+**✏️ Document status**: Review
 
 **🎬 Prototypes and demos:**
 
@@ -41,82 +41,15 @@ A proposal for cross-platform customization
 - Dev experience
 
 - Insight on open questions
+  ​​
 
-Contents
-
-​​
-
-​
-
-​
-
-​
-
-​
-
-​
-
-​
-
-​
-
-​
-
-​
-
-​
-
-​
-
-​
-
-​
-
-​
-
-​
-
-​
-
-​
-
-​
-
-​
-
-​
-
-​
-
-​
-
-​
-
-​
-
-​
-
-​
-
-​
-
-​
-
-​
-
-​
-
-​
-
-​​
-
-Summary
+## Summary
 
 This RFC outlines implementation details for an expansion of Fluent UI React's token system to enable better cross-platform support and more intuitive and predictable customization. **It is effectively adding a new component token layer to complete the original tokens proposal, which today only includes global and alias.**
 
 It is also part of a broader effort to align and unify tokens across various implementations of Microsoft's design system. This expanded token system will also serve as a mechanism to achieve visual alignment between products and libraries implementing Fluent 2.
 
-Background
+## Background
 
 Increasingly, Fluent is being asked to deliver common shared experiences which can show up on platforms that have different UX styling from out-of-the-box Fluent 2 web libraries (Windows, mobile). Often these experiences require a common design spec but use different UI libraries and platform technologies to implement, such as React or Web Components on web, or Compose and XML on Android.
 
@@ -124,7 +57,7 @@ Keeping these experiences visually aligned requires a token system with enough f
 
 In the long term, a more flexible token system also helps FUIR be more resilient to design language changes in response to evolving business needs.
 
-Problems with current Fluent tokens ecosystem
+## Problems with current Fluent tokens ecosystem
 
 Fluent UI React's current token system and the broader Fluent tokens ecosystem have three core shortcomings that make it challenging to fully support cross-platform, theme-based customization.
 
@@ -134,23 +67,20 @@ Fluent UI React's current token system and the broader Fluent tokens ecosystem h
 
 3.  Token names and semantics differ between platforms and libraries
 
-Current FUIR tokens lack component tokens
+## Current FUIR tokens lack component tokens
 
 The current Theme definition only supports global and alias tokens, with no support for component-level tokens. This has been discussed previously ([Theme Tokens](https://github.com/microsoft/fluentui/blob/6e6a1bf624e5a682b3607d918793d6f0eeb6b12a/rfcs/react-components/convergence/theme-tokens.md#component-tokens), [Custom Styling](https://github.com/microsoft/fluentui/blob/6e6a1bf624e5a682b3607d918793d6f0eeb6b12a/rfcs/react-components/convergence/custom-styling.md#extended-design-tokens)), but never implemented due to the [performance cost](https://github.com/microsoft/fluentui/blob/6e6a1bf624e5a682b3607d918793d6f0eeb6b12a/rfcs/react-components/convergence/theme-shape.md#performance-analysis) from the number of CSS variables that would be injected. As a result, the system doesn't have enough fidelity to support different platforms' component customization needs at the _theming layer_.
 
 Additionally, FUIR's components consume these alias tokens directly:
 
+```javascript
 // useButtonStyles.styles.ts
-
 const useRootBaseClassName = makeStyles({
-
-...
-
-backgroundColor: tokens.colorNeutralBackground1,
-
-...
-
+  ...
+  backgroundColor: tokens.colorNeutralBackground1,
+  ...
 });
+```
 
 This effectively tightly-couples components together from a styling POV. There is no abstraction layer at the component level to prevent theme-level token changes from affecting other components.
 
@@ -158,7 +88,7 @@ Example: Changing the border radius and border width of all Button components th
 
 The CustomStyleHook is an alternative that enables deeper customization of all instances of a specific component, but this is limited to apps using v9 and React. We need a solution that is agnostic to the rendering tech.
 
-Alias token names lack usage semantics
+## Alias token names lack usage semantics
 
 Fluent's alias tokens add some semantic context to global tokens by assigning design language category, foreground/background, interactive state, and occasionally other descriptors like inverted, static, alpha, etc. These tokens give some meaning to static values, but by design are generic and do not indicate in what contexts they should be used; usage is not self-evident from the names.
 
@@ -166,7 +96,7 @@ Without this meaning, it can be difficult to know how to apply tokens correctly.
 
 This type of outcome can be mitigated with clearer guidance (documentation, theme typings, UI toolkit notes, etc), but context-specific names that guide developers to the right usage can prevent them from occurring in the first place.
 
-Token names and semantics differ between platforms and libraries
+## Token names and semantics differ between platforms and libraries
 
 Among apps and libraries implementing Fluent, the conventions for naming tokens/brushes/slots varies in terms of the labels as well as the level of granularity exposed. This isn't strictly an issue with FUIR but presents a challenge when seeking to use a single design spec for a shared experience that renders in multiple contexts. It requires interop layers between theming systems where semantic concepts may not map 1:1, which can lead to issues like inaccessible color pairings or insufficient styling knobs when embedding an experience built with v9 into a host environment. Differences like these are the key motivating factor in the broader tokens unification effort this RFC is representing.
 
@@ -174,107 +104,49 @@ Among apps and libraries implementing Fluent, the conventions for naming tokens/
 
 An example is Windows' WinUI brushes, which use more granular labels like text-on-accent-fill-color-primary in addition to more primitive ones like text-fill-color-primary. This table illustrates an attempted mapping of WinUI's Text brushes to Fluent UI's closest equivalent alias tokens, which would be needed to create a "Windows theme" for Fluent UI.
 
-**WinUI Brush**
-
-**Closest Fluent UI Alias token**
-
-**Usage**
-
-text-fill-color-primary
-
-Neutral Foreground 1
-
-Primary text and icon color at rest
-
-text-fill-color-secondary
-
-Neutral Foreground 1 hover
-
-Primary text pressed, Secondary text at rest
-
-text-fill-color-tertiary
-
-Neutral Foreground 3
-
-Secondary text pressed. Not accessible on Windows
-
-text-fill-color-disabled
-
-Neutral Foreground Disabled
-
-Not accessible. Primary text and icon color disabled
-
-accent-text-fill-color-primary
-
-Brand Foreground Link
-
-The color of a link
-
-accent-text-fill-color-secondary
-
-Brand Foreground Link Hover
-
-Link while hovering
-
-accent-text-fill-color-tertiary
-
-Brand Foreground Link Pressed
-
-Link while pressing
-
-accent-text-fill-color-disabled
-
-No direct replacement
-
-Link while pressing
-
-text-on-accent-fill-color-primary
-
-Neutral Foreground on Brand
-
-Primary text and icon color disabled
-
-text-on-accent-fill-color-secondary
-
-No direct replacement
-
-Primary text and icon color disabled
-
-text-on-accent-fill-color-disabled
-
-No direct replacement
-
-Primary text and icon color disabled
+| WinUI Brush                         | Closest Fluent UI Alias token | Usage                                                |
+| ----------------------------------- | ----------------------------- | ---------------------------------------------------- |
+| text-fill-color-primary             | Neutral Foreground 1          | Primary text and icon color at rest                  |
+| text-fill-color-secondary           | Neutral Foreground 1 hover    | Primary text pressed, Secondary text at rest         |
+| text-fill-color-tertiary            | Neutral Foreground 3          | Secondary text pressed. Not accessible on Windows    |
+| text-fill-color-disabled            | Neutral Foreground Disabled   | Not accessible. Primary text and icon color disabled |
+| accent-text-fill-color-primary      | Brand Foreground Link         | The color of a link                                  |
+| accent-text-fill-color-secondary    | Brand Foreground Link Hover   | Link while hovering                                  |
+| accent-text-fill-color-tertiary     | Brand Foreground Link Pressed | Link while pressing                                  |
+| accent-text-fill-color-disabled     | No direct replacement         | Link while pressing                                  |
+| text-on-accent-fill-color-primary   | Neutral Foreground on Brand   | Primary text and icon color disabled                 |
+| text-on-accent-fill-color-secondary | No direct replacement         | Primary text and icon color disabled                 |
+| text-on-accent-fill-color-disabled  | No direct replacement         | Primary text and icon color disabled                 |
 
 While some of the more generic brushes can map 1:1 with Fluent UI's global or alias tokens, in some cases there are no direct mappings, which would represent a loss of semantic meaning. In practice this would necessitate new alias tokens to ensure full fidelity.
 
-Requirements
+## Requirements
 
 1.  No disruption to existing Fluent 2 token users
 
 2.  No or low performance impact. Dimensions to consider:
 
-3.  Bundle size
+    a. Bundle size
 
-4.  Reflow calculations
+    b. Reflow calculations
 
-5.  Memory
+    c. Memory
 
-Goals
+## Goals
 
 1.  Backwards-compatibility with existing Fluent 2 tokens. Transparent update to customers
 
 2.  Unified token API with other Fluent 2 implementations, e.g. Fluent Web Components and WinUI
 
-Non-goals
+## Non-goals
 
 1.  Modify, deprecate, or remove existing tokens
 
 2.  Require existing themes to consume the new tokens
 
-Proposed changes
+# Proposed changes
 
-Solution summary
+## Solution summary
 
 We propose adding a new token layer to effectively complete the existing system that was originally introduced with the v9 theme shape, which lacked component-specific tokens.
 
@@ -282,13 +154,13 @@ The changes needed to do this will be _additive_, rather than a replacement. The
 
 1.  New expanded tokens: Semantic and Control tokens
 
-2.  Expose Ssemantic and Control tokens in Theme
+2.  Expose Semantic and Control tokens in Theme
 
-3.  Update components to optionally consume semanticControl  tokens with fallbacks to Semantic if Control in Theme is absent. Similarly if Semantics are absent in Theme then fallback to Alias tokens (Fluent 2)that ifspecified,
+3.  Update components to optionally consume Control tokens with fallbacks to Semantic if Control in Theme is absent. Similarly if Semantics are absent in Theme then fallback to Alias tokens (Fluent 2)
 
 Additional options for each element are compared in [Other options considered](https://microsoft.sharepoint-df.com/:w:/s/XCDesignHorizontals/EbAhJTmA9LBBjvcIaRSDxkcBX_ADbPhV347o5zlmOsq-fw?e=3JKPpH&nav=eyJoIjoiOTU1MTcxMjY3In0).
 
-New extended tokens
+## New extended tokens
 
 The expanded tokens have 2 types of tokens available to customize different aspects of the theme at various levels of granularity. Both are optional, only to be used when customizing specific components in the theme; existing components will always fall back on alias tokens. From more generic to more specific, these token types are:
 
@@ -296,7 +168,7 @@ The expanded tokens have 2 types of tokens available to customize different aspe
 
 2.  Control tokens
 
-Semantic tokens
+## Semantic tokens
 
 Many components share common design elements like spacing, colors, border radius, etc. and can reasonably expect to be customized together as a family. **Semantic tokens** capture these shared design decisions and allow more granular customization of component families compared to alias tokens while keeping the ceiling of additional required tokens lower than if only control-level tokens were used.
 
@@ -306,37 +178,37 @@ These semantic token groups might include but aren’t limited to:
 
 - Button
 
-- Default
+  - Default
 
-- Brand
+  - Brand
 
-- Outline
+  - Outline
 
-- Subtle
+  - Subtle
 
 - Choice
 
-- Checkbox
+  - Checkbox
 
-- Radio
-
-- Input
+  - Radio
 
 - Input
 
-- Textarea
+  - Input
 
-- Searchbox
+  - Textarea
 
-- SpinButton
+  - Searchbox
+
+  - SpinButton
 
 - Progress
 
-- ProgressBar
+  - ProgressBar
 
-- Spinner
+  - Spinner
 
-Control tokens
+## Control tokens
 
 **Control tokens** are used to customize all instances of a specific component or variant. Because they are more narrowly scoped, they should only be used when needing to make precise changes that don't affect related components, or when a semantic token is not available for a particular change.
 
@@ -346,75 +218,20 @@ Examples:
 
 - ctrlInputBaseBackgroundColor
 
-Token naming: Semantic and control tokens
+## Token naming: Semantic and control tokens
 
 Semantic and control tokens use a 6-part structure for creating their names. Like alias tokens, the parts start with broad context and become increasingly granular. Note that not all every part will always be present: for example, base components won’t include variant, and some properties may not include modifiers.
 
 _Prefix – Component – Variant – Part – Property – Modifier_
 
-**Term**
-
-**Definition**
-
-**Examples**
-
-**Prefix**
-
-Prefix to distinguish control-specific tokens from semantic tokens that might share the same name, e.g. Button. Only applies to control tokens
-
-ctrlButton
-
-**Component**
-
-The base UI component or component family, aka semantic group
-
-Button
-
-Switch
-
-**Variant**
-
-A variant of the base component for more specific use cases
-
-Button Secondary
-
-Button Compound
-
-Button Brand
-
-**Part**
-
-A specific element within the default component. Can be a single part or multiple parts. Typically maps to a DOM element
-
-Button icon
-
-Button Secondary icon
-
-**Property**
-
-A visual attribute of the Component or Part. Often maps to a CSS property, but not always (e.g. stroke)
-
-Foreground color
-
-Background color
-
-Icon after
-
-Stroke width
-
-**Modifier**
-
-Context that changes the value of a property based on state or mode. Usually maps to an interactive state or mode.
-
-Rest
-
-Hover
-
-Pressed
-
-Disabled
-
-Selected-\*
+| Term      | Definition                                                                                                                                     | Examples                                                           |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Prefix    | Prefix to distinguish control-specific tokens from semantic tokens that might share the same name, e.g. Button. Only applies to control tokens | ctrlButton                                                         |
+| Component | The base UI component or component family, aka semantic group                                                                                  | Button<br>Switch                                                   |
+| Variant   | A variant of the base component for more specific use cases                                                                                    | Button Secondary<br>Button Compound<br>Button Brand                |
+| Part      | A specific element within the default component. Can be a single part or multiple parts. Typically maps to a DOM element                       | Button icon<br>Button Secondary icon                               |
+| Property  | A visual attribute of the Component or Part. Often maps to a CSS property, but not always (e.g. stroke)                                        | Foreground color<br>Background color<br>Icon after<br>Stroke width |
+| Modifier  | Context that changes the value of a property based on state or mode. Usually maps to an interactive state or mode.                             | Rest<br>Hover<br>Pressed<br>Disabled<br>Selected-\*                |
 
 _Variants_
 
@@ -422,29 +239,30 @@ The term “variants” is often used to describe alternative forms or styles of
 
 1.  **Style variant**: Component has a different look and feel, but same behaviors and visual structure as the base component.
 
-2.  In code, v9 typically uses appearance prop
+    a. In code, v9 typically uses appearance prop
 
-3.  In Figma, the Style property controls these
+    b. In Figma, the Style property controls these
 
-4.  Example: Button has Secondary, Primary, Subtle, Transparent style variants
+    c. Example: Button has Secondary, Primary, Subtle, Transparent style variants
 
-5.  **Layout variant**: Component has a different visual structure from the base component, but typically retains the same behaviors and data. Different Parts may be toggled on/off or have different visual treatments due to their composition.
+2.  **Layout variant**: Component has a different visual structure from the base component, but typically retains the same behaviors and data. Different Parts may be toggled on/off or have different visual treatments due to their composition.
 
-6.  In code, this might be controlled through optional component props e.g. Button icon and iconPosition
+    a. In code, this might be controlled through optional component props e.g. Button icon and iconPosition
 
-7.  In Figma,
+    b. In Figma,
 
-8.  Example: Buttons can have just a text label, just an icon, or an icon and Button
+    c. Example: Buttons can have just a text label, just an icon, or an icon and Button
 
-9.  **Functional variant**: Component exposes different interactions or data than the base component.
+3.  **Functional variant**: Component exposes different interactions or data than the base component.
 
-10. In code, these might be separate components with different APIs
+    a. In code, these might be separate components with different APIs
 
-Expose expanded tokens in Theme
+## Expose expanded tokens in Theme
 
 Each component that exposes tokens would add a Component.tokens.ts file to expose its tokens API:
 
-Button.tokens.ts
+```javascript
+// Button.tokens.ts
 
 import { tokens } from '@fluentui/react-theme';
 
@@ -459,7 +277,6 @@ buttonFontFamily: \`var(--buttonFontFamily,${tokens.fontFamilyBase})\`,
 ...
 
 }
-
 // Button control tokens, used by Default button
 
 export const buttonTokens = {
@@ -474,99 +291,63 @@ ctrlButtonFontFamily: \`var(--ctrlButtonFontFamily,${buttonGroupTokens.buttonFon
 
 }
 
+```
+
 These would then be added to the current Theme object:
 
-Tokens/src/types.ts
-
+```javascript
+// Tokens/src/types.ts
 **import { ButtonTokens } from '@fluentui/react-components';**
 
 export type Theme = FontSizeTokens &
+  LineHeightTokens &
+  BorderRadiusTokens &
+  StrokeWidthTokens &
+  HorizontalSpacingTokens &
+  VerticalSpacingTokens &
+  DurationTokens &
+  CurveTokens &
+  ShadowTokens &
+  ShadowBrandTokens &
+  FontFamilyTokens &
+  FontWeightTokens &
+  ColorPaletteTokens &
+  ColorStatusTokens &
+  ColorTokens &
+  ButtonTokens; // Addition
+```
 
-LineHeightTokens &
+### Other options considered
 
-BorderRadiusTokens &
+| Option                                                          | Pros                                                                                                                                     | Cons                                                                                                                                                                                                                                               |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Option A: Add all tokens to current ThemeProvider               | • Simple<br>• Builds on existing API<br>• No additional deps for partners                                                                | • Theme typings will get large as we'd include all component tokens<br>• Tokens object will get larger but not massive since we'd only ship values for component groups and not component tokens (these are optional slots)                        |
+| Option B.1: Create separate semantic FluentProvider             | • Separates Fluent Semantic Tokens (FSTs) from FluentProvider and Theme.<br>• Optional layering so partners only pull it in when needed. | • Requires extra layer<br>• May not be as intuitive as just using the existing provider already in applications<br>• May not provide much value since the components still need to have some level of awareness of the group and component tokens. |
+| Option B.2: Create separate semantic FluentProvider and package | • Same pros as above but with added flexibility around packaging and versioning                                                          | See above                                                                                                                                                                                                                                          |
 
-StrokeWidthTokens &
-
-HorizontalSpacingTokens &
-
-VerticalSpacingTokens &
-
-DurationTokens &
-
-CurveTokens &
-
-ShadowTokens &
-
-ShadowBrandTokens &
-
-FontFamilyTokens &
-
-FontWeightTokens &
-
-ColorPaletteTokens &
-
-ColorStatusTokens &
-
-ColorTokens &
-
-**ButtonTokens**;
-
-Other options considered
-
-**Option**
-
-**Pros**
-
-**Cons**
-
-**Option A: Add all tokens to current ThemeProvider**
-
-- Simple
-
-- Builds on existing API
-
-- No additional deps for partners
-
-- Theme typings will get large as we'd include all component tokens
-
-- Tokens object will get larger but not massive since we'd only ship values for component groups and not component tokens (these are optional slots)
-
-Option B.1: Create separate semantic FluentProvider
-
-- Separates Fluent Semantic Tokens (FSTs) from FluentProvider and Theme.
-
-- Optional layering so partners only pull it in when needed.
-
-- Requires extra layer
-
-- May not be as intuitive as just using the existing provider already in applications
-
-- May not provide much value since the components still need to have some level of awareness of the group and component tokens.
-
-Option B.2: Create separate semantic FluentProvider and package
-
-- Same pros as above but with added flexibility around packaging and versioning
-
-See above
-
-Update components to optionally consume expanded tokens
+## Update components to optionally consume expanded tokens
 
 Once exposed in the theme, the new tokens could be accessed in existing components simply by updating existing references to alias tokens with var(), passing the more precise token as the first argument and retaining original alias token as the second.
 
 For example, instead of:
 
-const useRootBaseClassName = makeStyles({   backgroundColor: 'var(--colorNeutralForeground1)' });
+```javascript
+const useRootBaseClassName = makeStyles({ backgroundColor: 'var(--colorNeutralForeground1)' });
+```
 
 We would use this:
 
-const useRootBaseClassName = makeStyles({   backgroundColor: 'var(--buttonBackgroundColorRest, var(--colorNeutralForeground1))' });
+```javascript
+const useRootBaseClassName = makeStyles({
+  backgroundColor: 'var(--buttonBackgroundColorRest, var(--colorNeutralForeground1))',
+});
+```
 
-This leverages var()’s fallback feature to read the new token’s value first only if defined in the theme, while falling back on the existing alias token if not defined.
+This leverages `var()`’s fallback feature to read the new token’s value first only if defined in the theme, while falling back on the existing alias token if not defined.
 
 To ensure backwards compatibility with existing themes, all v9 components consuming the new tokens should **always** use alias token fallbacks.
 
-Performance
+## Performance
 
 Given [previously observed performance issues](https://github.com/microsoft/fluentui/blob/6e6a1bf624e5a682b3607d918793d6f0eeb6b12a/rfcs/react-components/convergence/theme-shape.md#performance-analysis) when injecting a class with many CSS variables that referenced other CSS variables, we wanted to be sensitive to bloating the theme object with additional tokens. We noticed that performance penalties in the original tests were not concentrated at variable lookup time, but instead due to the root-level nature of the custom properties: each of the FluentProviders injected tokens that were associated with DOM elements, causing more reflows than would be expected with more scoped properties.
 
@@ -584,51 +365,19 @@ In both Chrome and tensile-perf, we saw little to no difference in both render a
 
 Other options considered
 
-Option
+| Option                                                        | Pros                                                                                                                                                                                                        | Cons                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Option A: Update existing components with var() fallbacks** | • Existing consumers automatically get the FST system without additional work beyond updating their packages<br>• Everyone stays in sync and should have equal capability improving interop and portability | • Once the changes are made, we are somewhat stuck with them (until the next major version)<br>• All consumers will pull these changes which means some increases in bundle size (gzipped impact seems minor based on our test PR so far).                                                                                                                                                                                                                                                               |
+| Option B: Custom style hooks                                  | • Fully opt in<br>• Removes component changes at the root and could allow us to ship separately from the core packages meaning breaking changes could be managed more easily in a separate package          | • performance regressions were noted in testing. This might be due to the fact that styles were generated and inserted in runtime. Additionally, it depends on React's context which re-renders components.<br>• Because it's opt in we wouldn't have uniform adoption<br><br>Opportunity: If we can fix the performance issues or understand them better this might be a really interesting option with lower risk. Can we investigate using these styles hooks but with Griffel outputting static CSS? |
+| Option C: Create component variants through recomposition     | • Could be shipped in separate packages<br>• avoids breaking changes                                                                                                                                        | • Could create confusion (which Button do consumers use? The base one or our SemanticTokenButton?)<br> There could be confusing ways in which semantic tokens could work in some places but not others if the right variants aren't used.                                                                                                                                                                                                                                                                |
 
-Pros
-
-Cons
-
-**Option A: Update existing components with var() fallbacks**
-
-- Existing consumers automatically get the FST system without additional work beyond updating their packages
-
-- Everyone stays in sync and should have equal capability improving interop and portability
-
-- Once the changes are made, we are somewhat stuck with them (until the next major version)
-
-- All consumers will pull these changes which means some increases in bundle size (gzipped impact seems minor based on our test PR so far).
-
-Option B: Custom style hooks
-
-- Fully opt in
-
-- Removes component changes at the root and could allow us to ship separately from the core packages meaning breaking changes could be managed more easily in a separate package
-
-- performance regressions were noted in testing. This might be due to the fact that styles were generated and inserted in runtime. Additionally, it depends on React's context which re-renders components.
-
-- Because it's opt in we wouldn't have uniform adoption
-
-Opportunity: If we can fix the performance issues or understand them better this might be a really interesting option with lower risk. Can we investigate using these styles hooks but with Griffel outputting static CSS?
-
-Option C: Create component variants through recomposition
-
-- Could be shipped in separate packages
-
-- avoids breaking changes
-
-- Could create confusion (which Button do consumers use? The base one or our SemanticTokenButton?)
-
-There could be confusing ways in which semantic tokens could work in some places but not others if the right variants aren't used.
-
-Open questions
+## Open questions
 
 In-product performance testing
 
 To date, we’ve mostly conducted synthetic tests against var() fallback performance. We still need to run integration tests against product scenarios to test real-world effects of additional CSS variables and fallbacks, as well as the overall dev experience. We plan to test this in Teams and will update accordingly.
 
-Package location
+### Package location
 
 Where should the expanded tokens live? We’re leaning towards Option B (**bolded**) now but would like feedback.
 
