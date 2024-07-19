@@ -1,4 +1,4 @@
-Extended tokens for Fluent UI React
+# Extended tokens for Fluent UI React
 
 A proposal for cross-platform customization
 
