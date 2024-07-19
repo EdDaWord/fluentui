@@ -321,7 +321,7 @@ export type Theme = FontSizeTokens &
 
 | Option                                                          | Pros                                                                                                                                     | Cons                                                                                                                                                                                                                                               |
 | --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Option A: Add all tokens to current ThemeProvider               | • Simple<br>• Builds on existing API<br>• No additional deps for partners                                                                | • Theme typings will get large as we'd include all component tokens<br>• Tokens object will get larger but not massive since we'd only ship values for component groups and not component tokens (these are optional slots)                        |
+| \*8Option A: Add all tokens to current ThemeProvider\*\*        | • Simple<br>• Builds on existing API<br>• No additional deps for partners                                                                | • Theme typings will get large as we'd include all component tokens<br>• Tokens object will get larger but not massive since we'd only ship values for component groups and not component tokens (these are optional slots)                        |
 | Option B.1: Create separate semantic FluentProvider             | • Separates Fluent Semantic Tokens (FSTs) from FluentProvider and Theme.<br>• Optional layering so partners only pull it in when needed. | • Requires extra layer<br>• May not be as intuitive as just using the existing provider already in applications<br>• May not provide much value since the components still need to have some level of awareness of the group and component tokens. |
 | Option B.2: Create separate semantic FluentProvider and package | • Same pros as above but with added flexibility around packaging and versioning                                                          | See above                                                                                                                                                                                                                                          |
 
@@ -381,89 +381,21 @@ To date, we’ve mostly conducted synthetic tests against var() fallback perform
 
 Where should the expanded tokens live? We’re leaning towards Option B (**bolded**) now but would like feedback.
 
-**Option**
+| Option                                                                                               | Pros                                                                                                                                            | Cons                                                                                                                                                                                                          |
+| ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **A: Expanded tokens would be co-located with corresponding components, adjacent to component code** | • Straightforward conceptual grouping for control tokens<br>• Easier to manage API surface for specific components                              | • Introduces circular dependency: react-components depends on tokens via react-theme, but not the other way around<br>• Where to host semantic tokens is less clear since they represent groups of components |
+| B: Expanded tokens would be added adjacent to current tokens in @fluentui/tokens                     | • Doesn't introduce circular dependency<br>• Single entry point for all tokens<br>• Simpler to opt-in                                           | • Ergonomics of splitting out component token API from component code might be awkward                                                                                                                        |
+| C: In a new package, e.g. @fluentui/tokens-expanded                                                  | • Doesn't introduce circular dependency<br>• Flexibility around packaging & versioning<br>• Insulates @fluentui/tokens from control token churn | • More friction to opt-in to expanded tokens<br>• Adds overhead                                                                                                                                               |
 
-**Pros**
-
-**Cons**
-
-**A: Expanded tokens would be co-located with corresponding components, adjacent to component code**
-
-- Straightforward conceptual grouping for control tokens
-
-- Easier to manage API surface for specific components
-
-- Introduces circular dependency: react-components depends on tokens via react-theme, but not the other way around
-
-- Where to host semantic tokens is less clear since they represent groups of components
-
-B: Expanded tokens would be added adjacent to current tokens in @fluentui/tokens
-
-- Doesn’t introduce circular dependency
-
-- Single entry point for all tokens
-
-- Simpler to opt-in
-
-- Ergonomics of splitting out component token API from component code might be awkward
-
-C: In a new package, e.g. @fluentui/tokens-expanded
-
-- Doesn’t introduce circular dependency
-
-- Flexibility around packaging & versioning
-
-- Insulates @fluentui/tokens from control token churn
-
-- More friction to opt-in to expanded tokens
-
-- Adds overhead
-
-How far do we go in exposing semantic tokens?
+## How far do we go in exposing semantic tokens?
 
 The expanded token system opens the door to adding many more tokens than might be needed while growing the API surface. We should consider the strategy we’ll use to scope and prioritize which components and variants will be tokenized, and how tokens will be exposed over time. We’re leaning towards Option C (**bolded**) but would like feedback.
 
-**Option**
-
-**Pros**
-
-**Cons**
-
-**Option A:** Tokenize everything, even if it's a variant. This includes recreating tokens for those variants even if the base has tokens.
-
-e.g. base button includes ctrlButtonBackgroundRest, rounded would then have ctrlButtonRoundedBackgroundRest
-
-- Tokens can control all aspects of each control and its variants.
-
-- Huge API surface
-
-- A lot more work to implement
-
-- Could easily get out of hand
-
-- Hard to roll back (we basically couldn't) if we find we don't need this level of fidelity
-
-**Option B:** Tokenize only the base styles, and use style overrides for variants and keep the tokens the same for the variants (pointing to alias or globals) aka don't have variant tokens
-
-- Simpler mental model, no figuring out what applies to variants vs base etc.
-
-- Less fidelity and no cross library interop. Overrides have to be done in the context of v9 (this doesn't meet some of our requirements)
-
-- Could still allow for future expansion to include variants
-
-**Option C: Tokenize the base and variant overrides only, expand the tokens to include additional variant tokens if needed.**
-
-- Still a somewhat simple mental model but with enough fidelity that we can control what we currently see.
-
-- Matches the way design is approaching this in Figma
-
-- If there is a need to modify variants we might be prevented from doing so within the token system and need to expand it down the road.
-
-- Could still allow for future expansion
-
-Automating exporting & distribution of tokens from Figma to code
-
-Today, there is a pipeline that takes a Figma file, generates token JSON configurations for each platform, and ultimately generates library code. For this expanded token system to succeed, it should ideally plug into that pipeline or leverage elements from it to remove manual steps.
+| Option                                                                                                                                                                                                                                                    | Pros                                                                                                                                                                | Cons                                                                                                                                                                                                      |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Option A: Tokenize everything, even if it's a variant. This includes recreating tokens for those variants even if the base has tokens.<br><br>e.g. base button includes ctrlButtonBackgroundRest, rounded would then have ctrlButtonRoundedBackgroundRest | • Tokens can control all aspects of each control and its variants.                                                                                                  | • Huge API surface<br>• A lot more work to implement<br>• Could easily get out of hand<br>• Hard to roll back (we basically couldn't) if we find we don't need this level of fidelity                     |
+| Option B: Tokenize only the base styles, and use style overrides for variants and keep the tokens the same for the variants (pointing to alias or globals) aka don't have variant tokens                                                                  | • Simpler mental model, no figuring out what applies to variants vs base etc.                                                                                       | • Less fidelity and no cross library interop. Overrides have to be done in the context of v9 (this doesn't meet some of our requirements)<br>• Could still allow for future expansion to include variants |
+| **Option C: Tokenize the base and variant overrides only, expand the tokens to include additional variant tokens if needed.**                                                                                                                             | • Still a somewhat simple mental model but with enough fidelity that we can control what we currently see.<br>• Matches the way design is approaching this in Figma | • If there is a need to modify variants we might be prevented from doing so within the token system and need to expand it down the road.<br>• Could still allow for future expansion                      |
 
 Usage guidance
 
@@ -477,19 +409,19 @@ The expanded token enables deeper, more portable customization, but adding many 
 
 3.  Consider if other [v9 customization scenarios](https://github.com/microsoft/fluentui/blob/6e6a1bf624e5a682b3607d918793d6f0eeb6b12a/rfcs/react-components/convergence/custom-styling.md#appendix-current-mechanisms-analysis) meet your needs. Each has capabilities, limitations, and varying complexity that impact suitability.
 
-4.  Custom themes using extended tokens = Customize a single component, family of components, or all components
+    a. Custom themes using extended tokens = Customize a single component, family of components, or all components
 
-5.  Custom themes using alias tokens => Customize generic style values for all components
+    b. Custom themes using alias tokens => Customize generic style values for all components
 
-6.  CustomStyleHook => Customize the style of all instances of a component
+    c. CustomStyleHook => Customize the style of all instances of a component
 
-7.  classname prop => Customize the style of one instance of a component
+    d. classname prop => Customize the style of one instance of a component
 
-8.  Hooks recomposition => Create a new component customizing the behavior, style, or rendering of an existing component.
+    e. Hooks recomposition => Create a new component customizing the behavior, style, or rendering of an existing component.
 
-9.  Consider local application or repository policies to limit usage of semantic tokens
+4.  Consider local application or repository policies to limit usage of semantic tokens
 
-Custom tokens
+## Custom tokens
 
 We also propose adding formal guidance and best practices for how to handle **custom tokens** in projects. It might consist of:
 
@@ -499,19 +431,19 @@ We also propose adding formal guidance and best practices for how to handle **cu
 
 3.  If creating custom tokens targeting a particular platform, always look for a fallback in the existing set
 
-4.  Example: Ensure token extensions fall back to a related control token
+    a. Example: Ensure token extensions fall back to a related control token
 
-5.  Don’t maintain copies of Fluent tokens directly as they are subject to change
+4.  Don’t maintain copies of Fluent tokens directly as they are subject to change
 
-6.  Consider creating a “proxy” internal tokens API that merges Fluent tokens and custom product tokens
+5.  Consider creating a “proxy” internal tokens API that merges Fluent tokens and custom product tokens
 
-7.  Clearly denote tokens that are custom and not part of Fluent. Example locations to clarify:
+6.  Clearly denote tokens that are custom and not part of Fluent. Example locations to clarify:
 
-8.  Figma
+    a. Figma
 
-9.  Code comments
+    b. Code comments
 
-10. Typings
+    c. Typings
 
 Appendix
 
