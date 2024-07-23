@@ -317,7 +317,7 @@ export type Theme = FontSizeTokens &
 
 | Option                                                          | Pros                                                                                                                                     | Cons                                                                                                                                                                                                                                               |
 | --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| \*8Option A: Add all tokens to current FluentProvider\*\*       | • Simple<br>• Builds on existing API<br>• No additional deps for partners                                                                | • Theme typings will get large as we'd include all component tokens<br>• Tokens object will get larger but not massive since we'd only ship values for component groups and not component tokens (these are optional slots)                        |
+| **Option A: Add all tokens to current FluentProvider**          | • Simple<br>• Builds on existing API<br>• No additional deps for partners                                                                | • Theme typings will get large as we'd include all component tokens<br>• Tokens object will get larger but not massive since we'd only ship values for component groups and not component tokens (these are optional slots)                        |
 | Option B.1: Create separate semantic FluentProvider             | • Separates Fluent Semantic Tokens (FSTs) from FluentProvider and Theme.<br>• Optional layering so partners only pull it in when needed. | • Requires extra layer<br>• May not be as intuitive as just using the existing provider already in applications<br>• May not provide much value since the components still need to have some level of awareness of the group and component tokens. |
 | Option B.2: Create separate semantic FluentProvider and package | • Same pros as above but with added flexibility around packaging and versioning                                                          | See above                                                                                                                                                                                                                                          |
 
@@ -393,9 +393,9 @@ The expanded token system opens the door to adding many more tokens than might b
 | Option B: Tokenize only the base styles, and use style overrides for variants and keep the tokens the same for the variants (pointing to alias or globals) aka don't have variant tokens                                                                  | • Simpler mental model, no figuring out what applies to variants vs base etc.                                                                                       | • Less fidelity and no cross library interop. Overrides have to be done in the context of v9 (this doesn't meet some of our requirements)<br>• Could still allow for future expansion to include variants |
 | **Option C: Tokenize the base and variant overrides only, expand the tokens to include additional variant tokens if needed.**                                                                                                                             | • Still a somewhat simple mental model but with enough fidelity that we can control what we currently see.<br>• Matches the way design is approaching this in Figma | • If there is a need to modify variants we might be prevented from doing so within the token system and need to expand it down the road.<br>• Could still allow for future expansion                      |
 
-Usage guidance
+## Usage guidance
 
-Semantic tokens
+### Semantic tokens
 
 The expanded token enables deeper, more portable customization, but adding many extra CSS variables to a theme can have a performance tradeoff. To guide developers to make the most of this system, we’d propose adding the following guidance to the [Styles Handbook](https://github.com/microsoft/fluentui/blob/master/docs/react-v9/contributing/rfcs/react-components/styles-handbook.md) and/or [Theming page](https://react.fluentui.dev/?path=/docs/concepts-developer-theming--page).
 
@@ -417,7 +417,7 @@ The expanded token enables deeper, more portable customization, but adding many 
 
 4.  Consider local application or repository policies to limit usage of semantic tokens
 
-## Custom tokens
+### Custom tokens
 
 We also propose adding formal guidance and best practices for how to handle **custom tokens** in projects. It might consist of:
 
