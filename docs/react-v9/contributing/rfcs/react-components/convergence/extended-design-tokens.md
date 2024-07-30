@@ -1,6 +1,6 @@
 # Extended tokens for Fluent UI React
 
-A proposal for cross-platform customization
+A proposal for cross-platform customization by extending existing Design Tokens.
 
 **✍️ Document owners:** Brandon Thomas, Peter Jahn, Ed Wang
 
@@ -8,19 +8,33 @@ A proposal for cross-platform customization
 
 **✏️ Document status**: Review
 
-**🎬 Prototypes and demos:**
+**🎬 Prototypes and demo PRs:**
 
-- [Draft (Prototype): Semantic Tokens test (component design tokens)](https://github.com/microsoft/fluentui/pull/31330)
+- [(Architecture Prototype): Extended tokens on each component](https://github.com/microsoft/fluentui/pull/31330)
 
-- [Default Button Demo](https://fluentuipr.z22.web.core.windows.net/pull/31330/public-docsite-v9/storybook/index.html?path=/docs/components-button-button--default#appearance)
+  - [Default Button Demo](https://fluentuipr.z22.web.core.windows.net/pull/31330/public-docsite-v9/storybook/index.html?path=/docs/components-button-button--default#appearance)
 
-- [ToggleButton Demo](https://fluentuipr.z22.web.core.windows.net/pull/31330/public-docsite-v9/storybook/index.html?path=/docs/components-button-togglebutton--default#appearance)
+  - [ToggleButton Demo](https://fluentuipr.z22.web.core.windows.net/pull/31330/public-docsite-v9/storybook/index.html?path=/docs/components-button-togglebutton--default#appearance)
 
-- [ComboBox Demo](https://fluentuipr.z22.web.core.windows.net/pull/31330/public-docsite-v9/storybook/index.html?path=/docs/components-combobox--default#appearance)
+  - [ComboBox Demo](https://fluentuipr.z22.web.core.windows.net/pull/31330/public-docsite-v9/storybook/index.html?path=/docs/components-combobox--default#appearance)
 
-- [Switch Demo](https://fluentuipr.z22.web.core.windows.net/pull/31330/public-docsite-v9/storybook/index.html?path=/docs/components-switch--default#checked)
+  - [Switch Demo](https://fluentuipr.z22.web.core.windows.net/pull/31330/public-docsite-v9/storybook/index.html?path=/docs/components-switch--default#checked)
 
-**📖 See also**:
+- [(Architecture Prototype): Adding semantic tokens to FluentProvider typing](https://github.com/microsoft/fluentui/pull/32104)
+
+- [(Performance testing): on tokens.ts (not actual architecture)](https://github.com/microsoft/fluentui/pull/31672)
+
+- [(Performance testing): on each component for Teams](https://github.com/microsoft/fluentui/pull/31692)
+
+**🎨 Design WIP**
+
+- [Control and Semantics Tokens Figma File with components](https://www.figma.com/design/QvbzVbuxcLKGMTNCHpAsjt/Fluent-Semantic-Token-Library?m=auto&node-id=11392-41202&t=UupAnqOZkQ3PuSbj-1)
+
+- [Figma plugin for exporting extended tokens set](https://github.com/Jeremy-Knudsen/Fluent-Tokens-Exporter)
+
+- [Script for pruning Control, Semantic, and Alias tokens into smallest set](https://github.com/EdDaWord/design-tokens-collapse)
+
+**📖 Related RFCs**:
 
 - [RFC: Custom Styling](https://github.com/microsoft/fluentui/blob/master/docs/react-v9/contributing/rfcs/react-components/convergence/custom-styling.md)
 
@@ -32,18 +46,18 @@ A proposal for cross-platform customization
 
 **🎤 Types of feedback requested:**
 
-- Implementation suggestions, especially on var() fallback strategy
+- Implementation suggestions, especially on var() fallback strategy.
 
-- Performance considerations
+- Performance considerations.
 
-- Dev experience
+- Dev experience.
 
-- Insight on open questions
+- Insight on open questions.
   ​​
 
 ## Summary
 
-This RFC outlines implementation details for an expansion of Fluent UI React's token system to enable better cross-platform support and more intuitive and predictable customization. **It is effectively adding a new component token layer to complete the original tokens proposal, which today only includes global and alias.**
+This RFC outlines implementation details for an expansion of Fluent UI React's token system to enable better cross-platform support and more intuitive and predictable customization. **It is effectively adding an additional component token layer to complete the original tokens proposal, which today only includes global and alias.**
 
 It is also part of a broader effort to align and unify tokens across various implementations of Microsoft's design system. This expanded token system will also serve as a mechanism to achieve visual alignment between products and libraries implementing Fluent 2.
 
@@ -53,15 +67,15 @@ Increasingly, Fluent is being asked to deliver common shared experiences which c
 
 Keeping these experiences visually aligned requires a token system with enough fidelity to make component-level adjustments to ensure UI elements feel natural on every platform without requiring wholesale restyling or expensive to build and maintain conditional rendering (e.g. rendering custom UI for specific platforms).
 
-In the long term, a more flexible token system also helps FUIR be more resilient to design language changes in response to evolving business needs.
+In the long term, a more flexible token system also helps Fluent UI React (FUIR) be more resilient to design language changes in response to evolving business needs.
 
 ## Problems with current Fluent tokens ecosystem
 
 Fluent UI React's current token system and the broader Fluent tokens ecosystem have three core shortcomings that make it challenging to fully support cross-platform, theme-based customization.
 
-1.  Current FUIR tokens lack component tokens
+1.  Current FUIR tokens lack component tokens.
 
-2.  Alias token names lack usage semantics
+2.  Alias token names lack usage semantics: Density
 
 3.  Token names and semantics differ between platforms and libraries
 
@@ -90,7 +104,7 @@ The CustomStyleHook is an alternative that enables deeper customization of all i
 
 Fluent's alias tokens add some semantic context to global tokens by assigning design language category, foreground/background, interactive state, and occasionally other descriptors like inverted, static, alpha, etc. These tokens give some meaning to static values, but by design are generic and do not indicate in what contexts they should be used; usage is not self-evident from the names.
 
-Without this meaning, it can be difficult to know how to apply tokens correctly. For example, the tokens don't differentiate between surfaces (app page, container controls) and control backgrounds, so an app that wanted to use colorNeutralBackground3 for its page background would find that it is also used as backgrounds for [Tag](https://github.com/microsoft/fluentui/blob/ff79ac88545c9cbc7966f75f61a9d506f3ebb963/packages/react-components/react-tags/src/components/Tag/useTagStyles.styles.ts#L107) or certain variants of [Input](https://github.com/microsoft/fluentui/blob/ff79ac88545c9cbc7966f75f61a9d506f3ebb963/packages/react-components/react-input/src/components/Input/useInputStyles.styles.ts#L181). Adjusting this color at the theme layer would result in styling changes to components that may not have been desired or expected.
+Without this meaning, it can be difficult to know how to apply tokens correctly. For example, the tokens don't differentiate between surfaces (app page, container controls) and control backgrounds, so an app that wanted to use `colorNeutralBackground3` for its page background would find that it is also used as backgrounds for [Tag](https://github.com/microsoft/fluentui/blob/ff79ac88545c9cbc7966f75f61a9d506f3ebb963/packages/react-components/react-tags/src/components/Tag/useTagStyles.styles.ts#L107) or certain variants of [Input](https://github.com/microsoft/fluentui/blob/ff79ac88545c9cbc7966f75f61a9d506f3ebb963/packages/react-components/react-input/src/components/Input/useInputStyles.styles.ts#L181). Adjusting this color at the theme layer would result in styling changes to components that may not have been desired or expected.
 
 This type of outcome can be mitigated with clearer guidance (documentation, theme typings, UI toolkit notes, etc), but context-specific names that guide developers to the right usage can prevent them from occurring in the first place.
 
@@ -102,25 +116,25 @@ Among apps and libraries implementing Fluent, the conventions for naming tokens/
 
 An example is Windows' WinUI brushes, which use more granular labels like text-on-accent-fill-color-primary in addition to more primitive ones like text-fill-color-primary. This table illustrates an attempted mapping of WinUI's Text brushes to Fluent UI's closest equivalent alias tokens, which would be needed to create a "Windows theme" for Fluent UI.
 
-| WinUI Brush                         | Closest Fluent UI Alias token | Usage                                                |
-| ----------------------------------- | ----------------------------- | ---------------------------------------------------- |
-| text-fill-color-primary             | Neutral Foreground 1          | Primary text and icon color at rest                  |
-| text-fill-color-secondary           | Neutral Foreground 1 hover    | Primary text pressed, Secondary text at rest         |
-| text-fill-color-tertiary            | Neutral Foreground 3          | Secondary text pressed. Not accessible on Windows    |
-| text-fill-color-disabled            | Neutral Foreground Disabled   | Not accessible. Primary text and icon color disabled |
-| accent-text-fill-color-primary      | Brand Foreground Link         | The color of a link                                  |
-| accent-text-fill-color-secondary    | Brand Foreground Link Hover   | Link while hovering                                  |
-| accent-text-fill-color-tertiary     | Brand Foreground Link Pressed | Link while pressing                                  |
-| accent-text-fill-color-disabled     | No direct replacement         | Link while pressing                                  |
-| text-on-accent-fill-color-primary   | Neutral Foreground on Brand   | Primary text and icon color disabled                 |
-| text-on-accent-fill-color-secondary | No direct replacement         | Primary text and icon color disabled                 |
-| text-on-accent-fill-color-disabled  | No direct replacement         | Primary text and icon color disabled                 |
+| WinUI Brush                         | Closest Fluent UI Alias token | Usage                                                 |
+| ----------------------------------- | ----------------------------- | ----------------------------------------------------- |
+| text-fill-color-primary             | Neutral Foreground 1          | Primary text and icon color at rest                   |
+| text-fill-color-secondary           | Neutral Foreground 1 hover    | Primary text pressed, Secondary text at rest          |
+| text-fill-color-tertiary            | Neutral Foreground 3          | Secondary text pressed. **Not accessible on Windows** |
+| text-fill-color-disabled            | Neutral Foreground Disabled   | Not accessible. Primary text and icon color disabled  |
+| accent-text-fill-color-primary      | Brand Foreground Link         | The color of a link                                   |
+| accent-text-fill-color-secondary    | Brand Foreground Link Hover   | Link while hovering                                   |
+| accent-text-fill-color-tertiary     | Brand Foreground Link Pressed | Link while pressing                                   |
+| accent-text-fill-color-disabled     | **No direct replacement**     | Link while pressing                                   |
+| text-on-accent-fill-color-primary   | Neutral Foreground on Brand   | Primary text and icon color disabled                  |
+| text-on-accent-fill-color-secondary | **No direct replacement**     | Primary text and icon color disabled                  |
+| text-on-accent-fill-color-disabled  | **No direct replacement**     | Primary text and icon color disabled                  |
 
 While some of the more generic brushes can map 1:1 with Fluent UI's global or alias tokens, in some cases there are no direct mappings, which would represent a loss of semantic meaning. In practice this would necessitate new alias tokens to ensure full fidelity.
 
 ## Requirements
 
-1.  No disruption to existing Fluent 2 token users
+1.  No disruption to existing Fluent 2 token users.
 
 2.  No or low performance impact. Dimensions to consider:
 
@@ -132,29 +146,29 @@ While some of the more generic brushes can map 1:1 with Fluent UI's global or al
 
 ## Goals
 
-1.  Backwards-compatibility with existing Fluent 2 tokens. Transparent update to customers
+1.  Backwards-compatibility with existing Fluent 2 tokens. Transparent update to customers.
 
 2.  Unified token API with other Fluent 2 implementations, e.g. Fluent Web Components and WinUI
 
 ## Non-goals
 
-1.  Modify, deprecate, or remove existing tokens
+1.  Modify, deprecate, or remove existing tokens.
 
-2.  Require existing themes to consume the new tokens
+2.  Require existing themes to consume the new tokens.
 
 # Proposed changes
 
 ## Solution summary
 
-We propose adding a new token layer to effectively complete the existing system that was originally introduced with the v9 theme shape, which lacked component-specific tokens.
+We propose extending the token layer to effectively complete the existing system that was originally introduced with the v9 theme shape, which lacked component-specific tokens.
 
-The changes needed to do this will be _additive_, rather than a replacement. The proposal consists of 3 elements:
+The changes needed to do this will be **additive**, rather than a replacement. The proposal consists of 3 elements:
 
 1.  New expanded tokens: Semantic and Control tokens
 
-2.  Expose Semantic and Control tokens in Theme
+2.  Expose Semantic tokens in Theme via `tokens/src/types.ts`
 
-3.  Update components to optionally consume Control tokens with fallbacks to Semantic if Control in Theme is absent. Similarly if Semantics are absent in Theme then fallback to Alias tokens (Fluent 2)
+3.  Update components to optionally consume Control tokens with fallbacks to Semantic if Control in Theme is absent. Similarly if Semantics are absent in Theme then fallback to Alias tokens (Fluent 2).
 
 ## New extended tokens
 
