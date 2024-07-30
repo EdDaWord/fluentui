@@ -53,7 +53,6 @@ A proposal for cross-platform customization by extending existing Design Tokens.
 - Dev experience.
 
 - Insight on open questions.
-  ​​
 
 ## Summary
 
@@ -73,7 +72,7 @@ In the long term, a more flexible token system also helps Fluent UI React (FUIR)
 
 Fluent UI React's current token system and the broader Fluent tokens ecosystem have three core shortcomings that make it challenging to fully support cross-platform, theme-based customization.
 
-1.  Current FUIR tokens lack component tokens.
+1.  Current FUIR tokens lack component-level tokens.
 
 2.  Alias token names lack usage semantics: Density
 
@@ -389,7 +388,7 @@ To date, we’ve mostly conducted synthetic tests against var() fallback perform
 
 ### Package location
 
-Where should the expanded tokens live? We’re leaning towards Option B (**bolded**) now but would like feedback.
+Where should the expanded tokens live? We’re leaning towards Option A (**bolded**) now but would like feedback.
 
 | Option                                                                                               | Pros                                                                                                                                            | Cons                                                                                                                                                                                                          |
 | ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
