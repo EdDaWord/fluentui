@@ -233,14 +233,14 @@ Semantic and control tokens use a 6-part structure for creating their names. Lik
 
 _Prefix – Component – Variant – Part – Property – Modifier_
 
-| Term      | Definition                                                                                                                                     | Examples                                                           |
-| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Prefix    | Prefix to distinguish control-specific tokens from semantic tokens that might share the same name, e.g. Button. Only applies to control tokens | ctrlButton                                                         |
-| Component | The base UI component or component family, aka semantic group                                                                                  | Button<br>Switch                                                   |
-| Variant   | A variant of the base component for more specific use cases                                                                                    | Button Secondary<br>Button Compound<br>Button Brand                |
-| Part      | A specific element within the default component. Can be a single part or multiple parts. Typically maps to a DOM element                       | Button icon<br>Button Secondary icon                               |
-| Property  | A visual attribute of the Component or Part. Often maps to a CSS property, but not always (e.g. stroke)                                        | Foreground color<br>Background color<br>Icon after<br>Stroke width |
-| Modifier  | Context that changes the value of a property based on state or mode. Usually maps to an interactive state or mode.                             | Rest<br>Hover<br>Pressed<br>Disabled<br>Selected-\*                |
+| Term      | Definition                                                                                                                                     | Examples                                                       |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| Prefix    | Prefix to distinguish control-specific tokens from semantic tokens that might share the same name, e.g. Button. Only applies to control tokens | ctrl / smtc                                                    |
+| Component | The base UI component or component family, aka semantic group                                                                                  | Button<br>Switch                                               |
+| Variant   | A variant of the base component for more specific use cases                                                                                    | Secondary<br>Compound<br>Brand                                 |
+| Part      | A specific element within the default component. Can be a single part or multiple parts. Typically maps to a DOM element                       | Icon<br>SecondaryIcon                                          |
+| Property  | A visual attribute of the Component or Part. Often maps to a CSS property, but not always (e.g. stroke)                                        | ForegroundColor<br>BackgroundColor<br>IconAfter<br>StrokeWidth |
+| Modifier  | Context that changes the value of a property based on state or mode. Usually maps to an interactive state or mode.                             | Rest<br>Hover<br>Pressed<br>Disabled<br>Selected-\*            |
 
 _Variants_
 
