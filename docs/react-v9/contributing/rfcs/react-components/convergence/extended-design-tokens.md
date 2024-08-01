@@ -113,7 +113,7 @@ Among apps and libraries implementing Fluent, the conventions for naming tokens/
 
 **Example: WinUI brushes**
 
-An example is Windows' WinUI brushes, which use more granular labels like text-on-accent-fill-color-primary in addition to more primitive ones like text-fill-color-primary. This table illustrates an attempted mapping of WinUI's Text brushes to Fluent UI's closest equivalent alias tokens, which would be needed to create a "Windows theme" for Fluent UI.
+An example is Windows' WinUI brushes, which use more granular labels like text-on-accent-fill-color-primary in addition to more primitive ones like text-fill-color-primary. This table illustrates an attempted mapping of WinUI's Text brushes to Fluent UI's closest equivalent alias tokens, which would be needed to create a "Windows theme" for Fluent UI. Bolded items are missing.
 
 | WinUI Brush                         | Closest Fluent UI Alias token | Usage                                                 |
 | ----------------------------------- | ----------------------------- | ----------------------------------------------------- |
